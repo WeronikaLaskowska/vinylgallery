@@ -1,7 +1,7 @@
 {
-  "name": "cars",
+  "name": "vinyls_gallery",
   "version": "1.0.0",
-  "description": "API with cars data",
+  "description": "API for college project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
     "rest",
     "cars"
   ],
-  "author": "Dariusz Kralewski",
+  "author": "Weronika Laskowska",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
