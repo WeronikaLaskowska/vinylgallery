@@ -8,6 +8,7 @@ const vinylSchema = mongoose.Schema({
   score: Number,
   description: String,
   genre: String,
+  image: String,
 });
 
 module.exports = mongoose.model("Vinyl", vinylSchema);

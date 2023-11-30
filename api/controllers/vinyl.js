@@ -1,17 +1,27 @@
 const Vinyl = require("../models/vinyl.js");
-
+const path = require("path");
 exports.vinyls_get_all = (req, res, next) => {
   Vinyl.find()
     .then((result) => {
+      const vinylsWithImage = result.map((vinyl) => {
+        return {
+          ...vinyl._doc,
+          image: vinyl.image ? path.basename(vinyl.image) : null,
+        };
+      });
+
       res.status(200).json({
         wiadomosc: "Vinyl list",
-        info: result,
+        info: vinylsWithImage,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
 };
 
 exports.vinyls_add_new = (req, res, next) => {
+  console.log(req);
   var vinyl = new Vinyl({
     artist: req.body.artist,
     type: req.body.type,
@@ -20,12 +30,21 @@ exports.vinyls_add_new = (req, res, next) => {
     score: req.body.score,
     description: req.body.description,
     genre: req.body.genre,
+    image: req.file ? req.file.path : null, // Save the image path
   });
-  vinyl.save();
-  res.status(201).json({
-    wiadomosc: "Vinyl added",
-    info: vinyl,
-  });
+
+  vinyl
+    .save()
+    .then((savedVinyl) => {
+      // Return the saved vinyl with the image path
+      res.status(201).json({
+        wiadomosc: "Vinyl added",
+        info: savedVinyl,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
 };
 
 exports.vinyls_get_by_id = (req, res, next) => {

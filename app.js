@@ -3,7 +3,7 @@ const express = require("express");
 
 // importuję zmienne środowiskowe
 require("dotenv").config();
-
+const cors = require("cors");
 // import mongoose
 const mongoose = require("mongoose");
 // połączenie z bazą
@@ -18,11 +18,12 @@ mongoose.connect(
 
 // instancja expresa
 const app = express();
-
+// Enable CORS for all routes
+app.use(cors());
 // uruchamiam logera
 const morgan = require("morgan");
 app.use(morgan("combined"));
-
+app.use("/uploads", express.static("uploads"));
 // uruchamiam body parser
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
