@@ -29,7 +29,12 @@ router.post(
 
 router.get("/:id", VinylController.vinyls_get_by_id);
 
-router.put("/:id", chackAuth, VinylController.vinyls_change);
+router.put(
+  "/:id",
+  chackAuth,
+  upload.single("image"),
+  VinylController.vinyls_change
+);
 
 router.delete("/:id", chackAuth, VinylController.vinyls_delete);
 

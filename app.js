@@ -27,6 +27,7 @@ app.use("/uploads", express.static("uploads"));
 // uruchamiam body parser
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // To parse URL-encoded bodies
 
 // routy
 const carRoutes = require("./api/routes/cars");

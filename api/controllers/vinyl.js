@@ -1,7 +1,20 @@
 const Vinyl = require("../models/vinyl.js");
 const path = require("path");
+
 exports.vinyls_get_all = (req, res, next) => {
-  Vinyl.find()
+  const page = parseInt(req.query.page) || 1; // Get the page parameter or default to 1
+  const limit = parseInt(req.query.limit) || 10; // Get the limit parameter or default to 10
+
+  let totalItems = 0;
+
+  Vinyl.countDocuments()
+    .then((count) => {
+      totalItems = count;
+
+      return Vinyl.find()
+        .skip((page - 1) * limit) // Skip records based on page number and limit
+        .limit(limit); // Limit the number of records per page
+    })
     .then((result) => {
       const vinylsWithImage = result.map((vinyl) => {
         return {
@@ -11,8 +24,10 @@ exports.vinyls_get_all = (req, res, next) => {
       });
 
       res.status(200).json({
-        wiadomosc: "Vinyl list",
+        message: "Vinyl list",
         info: vinylsWithImage,
+        page: page,
+        totalItems: totalItems,
       });
     })
     .catch((err) => {
@@ -21,7 +36,6 @@ exports.vinyls_get_all = (req, res, next) => {
 };
 
 exports.vinyls_add_new = (req, res, next) => {
-  console.log(req);
   var vinyl = new Vinyl({
     artist: req.body.artist,
     type: req.body.type,
@@ -61,23 +75,35 @@ exports.vinyls_get_by_id = (req, res, next) => {
 
 exports.vinyls_change = (req, res, next) => {
   const id = req.params.id;
-  var vinyl = new Vinyl({
-    artist: req.body.artist ?? undefined,
-    type: req.body.type ?? undefined,
-    name: req.body.name ?? undefined,
-    year: req.body.year ?? undefined,
-    score: req.body.score ?? undefined,
-    description: req.body.description ?? undefined,
-    genre: req.body.genre ?? undefined,
-  });
-  vinyl.save();
-  Vinyl.findByIdAndUpdate(id, nowySamochod)
-    .then(() => {
-      res.status(200).json({ wiadomosc: "Changed vinyl  " + id });
-    })
-    .catch((err) => res.status(404).json(err));
-};
+  console.log("Updated Vinyl:", req);
 
+  // Construct the updated vinyl object based on the request body
+  const updatedVinyl = {
+    artist: req.body.artist,
+    type: req.body.type,
+    name: req.body.name,
+    year: req.body.year,
+    score: req.body.score,
+    description: req.body.description,
+    genre: req.body.genre,
+  };
+
+  // Check if there's a new image to update
+  if (req.file) {
+    console.log("New Image Path:", req.file.path);
+    updatedVinyl.image = req.file.path; // Assign the new image path
+  }
+  Vinyl.findByIdAndUpdate(id, updatedVinyl, { new: true })
+    .then((updatedDoc) => {
+      if (!updatedDoc) {
+        return res.status(404).json({ message: "Vinyl not found" });
+      }
+      res
+        .status(200)
+        .json({ message: "Changed vinyl " + id, info: updatedDoc });
+    })
+    .catch((err) => res.status(500).json({ error: err }));
+};
 exports.vinyls_delete = (req, res, next) => {
   const id = req.params.id;
   Vinyl.findByIdAndDelete(id)
