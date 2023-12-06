@@ -1,19 +1,65 @@
 const Vinyl = require("../models/vinyl.js");
 const path = require("path");
 
+// exports.vinyls_get_all = (req, res, next) => {
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) || 10;
+//   const genreFilter = req.query.genre;
+//   let totalItems = 0;
+
+//   let filterCriteria = {}; // Initialize an empty filter criteria object
+
+//   if (genreFilter) {
+//     filterCriteria = { genre: genreFilter }; // Add genre filter to the criteria
+//   }
+
+//   Vinyl.countDocuments(filterCriteria)
+//     .then((count) => {
+//       totalItems = count;
+
+//       return Vinyl.find()
+//         .skip((page - 1) * limit)
+//         .limit(limit);
+//     })
+//     .then((result) => {
+//       const vinylsWithImage = result.map((vinyl) => {
+//         return {
+//           ...vinyl._doc,
+//           image: vinyl.image ? path.basename(vinyl.image) : null,
+//         };
+//       });
+
+//       res.status(200).json({
+//         message: "Vinyl list",
+//         info: vinylsWithImage,
+//         page: page,
+//         totalItems: totalItems,
+//       });
+//     })
+//     .catch((err) => {
+//       res.status(500).json({ error: err });
+//     });
+// };
 exports.vinyls_get_all = (req, res, next) => {
-  const page = parseInt(req.query.page) || 1; // Get the page parameter or default to 1
-  const limit = parseInt(req.query.limit) || 10; // Get the limit parameter or default to 10
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const genreFilter = req.query.genre;
 
   let totalItems = 0;
+  let filterCriteria = {};
 
-  Vinyl.countDocuments()
+  if (genreFilter) {
+    filterCriteria = { genre: genreFilter };
+  }
+
+  Vinyl.find(filterCriteria)
+    .countDocuments() // Count all documents that match the filter
     .then((count) => {
       totalItems = count;
 
-      return Vinyl.find()
-        .skip((page - 1) * limit) // Skip records based on page number and limit
-        .limit(limit); // Limit the number of records per page
+      return Vinyl.find(filterCriteria)
+        .skip((page - 1) * limit)
+        .limit(limit);
     })
     .then((result) => {
       const vinylsWithImage = result.map((vinyl) => {
@@ -75,7 +121,6 @@ exports.vinyls_get_by_id = (req, res, next) => {
 
 exports.vinyls_change = (req, res, next) => {
   const id = req.params.id;
-  console.log("Updated Vinyl:", req);
 
   // Construct the updated vinyl object based on the request body
   const updatedVinyl = {
