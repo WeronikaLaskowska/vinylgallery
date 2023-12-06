@@ -18,7 +18,7 @@ const Vinyl = require("../models/vinyl.js");
 const router = express.Router();
 const VinylController = require("../controllers/vinyl.js");
 const upload = multer({ storage: storage });
-router.get("/", chackAuth, VinylController.vinyls_get_all);
+router.get("/", VinylController.vinyls_get_all);
 
 router.post(
   "/",
