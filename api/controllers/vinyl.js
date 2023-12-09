@@ -1,45 +1,6 @@
 const Vinyl = require("../models/vinyl.js");
 const path = require("path");
 
-// exports.vinyls_get_all = (req, res, next) => {
-//   const page = parseInt(req.query.page) || 1;
-//   const limit = parseInt(req.query.limit) || 10;
-//   const genreFilter = req.query.genre;
-//   let totalItems = 0;
-
-//   let filterCriteria = {}; // Initialize an empty filter criteria object
-
-//   if (genreFilter) {
-//     filterCriteria = { genre: genreFilter }; // Add genre filter to the criteria
-//   }
-
-//   Vinyl.countDocuments(filterCriteria)
-//     .then((count) => {
-//       totalItems = count;
-
-//       return Vinyl.find()
-//         .skip((page - 1) * limit)
-//         .limit(limit);
-//     })
-//     .then((result) => {
-//       const vinylsWithImage = result.map((vinyl) => {
-//         return {
-//           ...vinyl._doc,
-//           image: vinyl.image ? path.basename(vinyl.image) : null,
-//         };
-//       });
-
-//       res.status(200).json({
-//         message: "Vinyl list",
-//         info: vinylsWithImage,
-//         page: page,
-//         totalItems: totalItems,
-//       });
-//     })
-//     .catch((err) => {
-//       res.status(500).json({ error: err });
-//     });
-// };
 exports.vinyls_get_all = (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -47,28 +8,28 @@ exports.vinyls_get_all = (req, res, next) => {
 
   let totalItems = 0;
   let filterCriteria = {};
-
+  //genre filtering
   if (genreFilter) {
     filterCriteria = { genre: genreFilter };
   }
 
   Vinyl.find(filterCriteria)
-    .countDocuments() // Count all documents that match the filter
+    .countDocuments()
     .then((count) => {
       totalItems = count;
-
+      //pagination
       return Vinyl.find(filterCriteria)
         .skip((page - 1) * limit)
         .limit(limit);
     })
     .then((result) => {
+      //image
       const vinylsWithImage = result.map((vinyl) => {
         return {
           ...vinyl._doc,
           image: vinyl.image ? path.basename(vinyl.image) : null,
         };
       });
-
       res.status(200).json({
         message: "Vinyl list",
         info: vinylsWithImage,
@@ -96,9 +57,8 @@ exports.vinyls_add_new = (req, res, next) => {
   vinyl
     .save()
     .then((savedVinyl) => {
-      // Return the saved vinyl with the image path
       res.status(201).json({
-        wiadomosc: "Vinyl added",
+        message: "Vinyl added",
         info: savedVinyl,
       });
     })
@@ -112,7 +72,7 @@ exports.vinyls_get_by_id = (req, res, next) => {
   Vinyl.findById(id)
     .then((result) => {
       res.status(200).json({
-        wiadomosc: "Vinyl details by id: " + id,
+        message: "Vinyl details by id: " + id,
         info: result,
       });
     })
@@ -122,7 +82,6 @@ exports.vinyls_get_by_id = (req, res, next) => {
 exports.vinyls_change = (req, res, next) => {
   const id = req.params.id;
 
-  // Construct the updated vinyl object based on the request body
   const updatedVinyl = {
     artist: req.body.artist,
     type: req.body.type,
@@ -133,10 +92,8 @@ exports.vinyls_change = (req, res, next) => {
     genre: req.body.genre,
   };
 
-  // Check if there's a new image to update
   if (req.file) {
-    console.log("New Image Path:", req.file.path);
-    updatedVinyl.image = req.file.path; // Assign the new image path
+    updatedVinyl.image = req.file.path;
   }
   Vinyl.findByIdAndUpdate(id, updatedVinyl, { new: true })
     .then((updatedDoc) => {
@@ -149,11 +106,12 @@ exports.vinyls_change = (req, res, next) => {
     })
     .catch((err) => res.status(500).json({ error: err }));
 };
+
 exports.vinyls_delete = (req, res, next) => {
   const id = req.params.id;
   Vinyl.findByIdAndDelete(id)
     .then(() => {
-      res.status(200).json({ wiadomosc: "Vinyl deleted by id: " + id });
+      res.status(200).json({ message: "Vinyl deleted by id: " + id });
     })
     .catch((err) => res.status(404).json(err));
 };

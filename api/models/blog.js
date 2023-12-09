@@ -7,4 +7,4 @@ const blogSchema = mongoose.Schema({
   image: String,
 });
 
-module.exports = mongoose.model("Vinyl", vinylSchema);
+module.exports = mongoose.model("Blog", blogSchema);
